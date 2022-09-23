@@ -1,0 +1,19 @@
+<h3>Todo List:</h3>
+{% if todos %}
+    <ul>
+        {% for todo in todos %}
+        <li>{{todo}} 
+            <a href="/delete/{{loop.index}}">Delete</a>
+        </li>
+        {% endfor %}
+    </ul>
+{% else %}
+No todos
+{% endif %}
+
+<form action="/add" method="post">
+  <label for="todo">Add a todo</label>
+  <br>
+  <input type="text" id="todo" name="todo"><br><br>
+  <input type="submit" value="Submit">
+</form>
