@@ -3,7 +3,6 @@ from flask import Flask, render_template, request, redirect
 app = Flask(__name__)
 
 todos: list [None] = []
-print(type(todos))
 
 
 @app.route("/", methods=['GET'])
