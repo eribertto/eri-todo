@@ -3,28 +3,21 @@ from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 
-todos: list = []
 
+# /// = relative path, //// = absolute path
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite://db.sqlite'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
 
-@app.route("/", methods=['GET'])
-def index():
-    return render_template("todo.html", todos=todos)
+class Todo(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100))
+    complete = db.Column(db.Boolean)
 
+@app.route('/')
+def hello_world():
+    return 'Hello World!'
 
-@app.route("/add", methods=['POST'])
-def add_todo():
-    if request.form['todo']:
-        todo = request.form["todo"]
-        todos.append(todo)
-    return redirect("/")
-
-
-# /delete/2
-# to delete todo with index 2
-@app.route("/delete/<int:index>", methods=['GET'])
-def delete_todo(index):
-    try:
-        del todos[index-1]
-    except ValueError as e:
-        print(e)
-    return render_template("todo.html", todos=todos)
+if __name__ == "__main__":
+    db.create_all()
+    app.run(debug=True)
