@@ -1,29 +1,50 @@
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, url_for
+from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 
-todos = []
+
+# /// = relative path, //// = absolute path
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
+
+class Todo(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100))
+    complete = db.Column(db.Boolean)
+
+@app.route('/')
+def home():
+    todo_list = Todo.query.all()
+    return render_template("base.html", todo_list=todo_list)
+
+@app.route('/add', methods=['POSTS'])
+def add():
+    title = request.form.get("title")
+    new_todo = Todo(title=title, complete=False)
+    db.session.add(new_todo)
+    db.session.commit()
+    return redirect(url_for("home"))
+
+@app.route('/update/<int:todo_id>')
+def update(todo_id):
+    todo = Todo.query.filter_by(id=todo_id).first()
+    todo.complete = not todo.complete
+    db.session.commit()
+    return redirect(url_for('home'))
+
+@app.route('/delete/<int:todo_id>')
+def delete(todo_id):
+    todo = Todo.query.filter_by(id=todo_id).first()
+    db.session.delete(todo)
+    db.session.commit()
+    return redirect(url_for('home'))
+
+                                
 
 
-@app.route("/", methods=['GET'])
-def index():
-    return render_template("todo.html", todos=todos)
 
-
-@app.route("/add", methods=['POST'])
-def add_todo():
-    if request.form['todo']:
-        todo = request.form["todo"]
-        todos.append(todo)
-    return redirect("/")
-
-
-# /delete/2
-# to delete todo with index 2
-@app.route("/delete/<int:index>", methods=['GET'])
-def delete_todo(index):
-    try:
-        del todos[index-1]
-    except ValueError as e:
-        print(e)
-    return render_template("todo.html", todos=todos)
+if __name__ == "__main__":
+    db.create_all()
+    app.run(debug=True)
