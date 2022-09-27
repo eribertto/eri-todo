@@ -19,7 +19,7 @@ def home():
     todo_list = Todo.query.all()
     return render_template("base.html", todo_list=todo_list)
 
-@app.route('/add', methods=['POSTS'])
+@app.route('/add', methods=['POST'])
 def add():
     title = request.form.get("title")
     new_todo = Todo(title=title, complete=False)
